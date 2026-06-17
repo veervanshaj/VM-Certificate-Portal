@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vedic Mathshala - Certificate Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- SheetJS Library for parsing Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- Google Font: Outfit -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: 'Outfit', sans-serif;
+    background: radial-gradient(circle at 10% 20%, #f6f8fb 0%, #e9eff8 100%);
+    min-height: 100vh;
+}
+
+/* Glassmorphism custom effects */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Custom Scrollbar for modern look */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* Hover scales and transition utilities */
+.btn-scale {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-scale:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+.btn-scale:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Pulse animation for active processing */
+@keyframes pulse-border {
+    0%, 100% { border-color: rgba(59, 130, 246, 0.4); }
+    50% { border-color: rgba(59, 130, 246, 0.9); }
+}
+.pulse-active {
+    animation: pulse-border 2s infinite;
+}
+</style>
+</head>
+
+<body class="flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
+
+<div class="w-full max-w-6xl flex flex-col gap-6">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2 border-b border-gray-200/60">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
+                <span class="text-2xl font-bold">V</span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800 tracking-tight">VEDIC MATHSHALA</h1>
+                <p class="text-xs font-semibold text-blue-600 tracking-wider uppercase">Certificate Management Portal</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm text-gray-500 font-medium">
+            <span class="inline-block w-2.5 h-2.5 bg-green-500 rounded-full animate-ping"></span>
+            Server: Online
+        </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 2-Columns: Upload and Preview -->
+        <section class="lg:col-span-2 flex flex-col gap-6">
+            
+            <!-- Background Queue Banner Status -->
+            <div id="queueStatusBanner" class="hidden glass-panel rounded-2xl shadow-lg p-5 border border-blue-200 bg-blue-50/30 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div id="spinnerIcon" class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                        </div>
+                        <span class="text-sm font-bold text-blue-900">Background Queue Active: Processing Certificates...</span>
+                    </div>
+                    <span id="queueCount" class="text-xs font-bold px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full border border-blue-200">
+                        0 left
+                    </span>
+                </div>
+                <div class="w-full bg-gray-200/80 rounded-full h-2 overflow-hidden shadow-inner">
+                    <div id="queueProgressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="queueMessage" class="text-xs text-blue-800/80 font-medium"></p>
+            </div>
+            
+            <!-- Step 1 & 2 Config Panel -->
+            <div class="glass-panel rounded-2xl shadow-xl p-6 md:p-8 flex flex-col gap-5">
+                
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 mb-0.5 flex items-center gap-2">
+                            <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">1</span>
+                            Choose Category & Input Mode
+                        </h2>
+                        <p class="text-xs text-gray-500">Select session category and choose Excel upload or Manual entry.</p>
+                    </div>
+                    <!-- Help Button -->
+                    <button 
+                        type="button" 
+                        class="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-semibold bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-lg border border-blue-200/50 transition duration-155 shrink-0"
+                        onclick="toggleHelpModal(true)"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Format Guide
+                    </button>
+                </div>
+
+                <!-- Category Segmented Buttons -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Category</label>
+                    <div class="flex bg-gray-200/60 p-1 rounded-xl w-full max-w-sm">
+                        <button 
+                            type="button" 
+                            id="btnClass" 
+                            class="flex-1 py-2 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 shadow-sm transition-all duration-200 focus:outline-none"
+                            onclick="setCategory('Class')"
+                        >
+                            🎓 Class
+                        </button>
+                        <button 
+                            type="button" 
+                            id="btnWorkshop" 
+                            class="flex-1 py-2 px-4 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-200 focus:outline-none"
+                            onclick="setCategory('Workshop')"
+                        >
+                            🛠️ Workshop
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mode Toggle Tabs -->
+                <div class="flex border-b border-gray-200 mb-1">
+                    <button 
+                        type="button" 
+                        id="tabExcel" 
+                        class="flex-1 pb-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 transition duration-150"
+                        onclick="switchInputMode('excel')"
+                    >
+                        📊 Excel Upload
+                    </button>
+                    <button 
+                        type="button" 
+                        id="tabManual" 
+                        class="flex-1 pb-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition duration-150"
+                        onclick="switchInputMode('manual')"
+                    >
+                        ✏️ Manual Entry
+                    </button>
+                </div>
+
+                <!-- EXCEL MODE SECTION -->
+                <div id="excelModeSection" class="flex flex-col gap-4">
+                    <!-- Interactive Upload Dropzone -->
+                    <div 
+                        id="dropzone" 
+                        class="border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 bg-white/50 hover:bg-blue-50/20 flex flex-col items-center justify-center"
+                    >
+                        <input 
+                            type="file" 
+                            id="fileInput" 
+                            accept=".xlsx,.xls" 
+                            class="hidden"
+                        >
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-700">Drag & drop your Excel file here</p>
+                        <p class="text-xs text-gray-500 mt-1">Accepts .xlsx and .xls file formats</p>
+                        <button 
+                            type="button" 
+                            class="mt-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 px-4 rounded-lg shadow-sm transition"
+                        >
+                            Browse Files
+                        </button>
+                    </div>
+                    
+                    <!-- File Metadata display -->
+                    <div id="fileInfo" class="hidden flex items-center justify-between bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 text-xs text-blue-800">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span id="fileName" class="font-semibold truncate">student_list.xlsx</span>
+                            <span id="fileSize" class="text-gray-400">12 KB</span>
+                        </div>
+                        <button type="button" class="text-red-500 hover:text-red-700 font-bold ml-2" onclick="resetFile()">Remove</button>
+                    </div>
+                </div>
+
+                <!-- MANUAL MODE SECTION -->
+                <div id="manualModeSection" class="hidden flex flex-col gap-4">
+                    <div class="bg-gray-50/50 border border-gray-200/50 rounded-2xl p-4 sm:p-5 flex flex-col gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Certificate ID</label>
+                                <div class="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        id="manualCertId" 
+                                        placeholder="e.g. VM-2026-C-001" 
+                                        class="flex-1 text-sm bg-white border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-3 rounded-lg border border-gray-300 transition"
+                                        onclick="autoGenerateCertId()"
+                                    >
+                                        Auto
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Student Name</label>
+                                <input 
+                                    type="text" 
+                                    id="manualName" 
+                                    placeholder="e.g. Rahul Sharma" 
+                                    class="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Course Level</label>
+                                <input 
+                                    type="text" 
+                                    id="manualLevel" 
+                                    placeholder="e.g. Level 1" 
+                                    class="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                                >
+                            </div>
+                            <div class="sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Date</label>
+                                <input 
+                                    type="text" 
+                                    id="manualDate" 
+                                    placeholder="DD-MM-YYYY" 
+                                    class="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                                >
+                            </div>
+                            <div class="sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Email Address</label>
+                                <input 
+                                    type="email" 
+                                    id="manualEmail" 
+                                    placeholder="e.g. name@email.com" 
+                                    class="w-full text-sm bg-white border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                            <button 
+                                type="button" 
+                                id="btnManualDownload"
+                                class="flex items-center justify-center gap-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl shadow-sm text-xs uppercase tracking-wide transition btn-scale"
+                                onclick="submitManualAction('download')"
+                            >
+                                📥 Download PDF
+                            </button>
+                            <button 
+                                type="button" 
+                                id="btnManualSend"
+                                class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md text-xs uppercase tracking-wide transition btn-scale"
+                                onclick="submitManualAction('email')"
+                            >
+                                ✉️ Send Email & Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Live Table Preview Panel -->
+            <div id="excelPreviewPanel" class="glass-panel rounded-2xl shadow-xl p-6 md:p-8 flex flex-col gap-4 flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
+                            <span class="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">2</span>
+                            Live Student Records Preview
+                        </h2>
+                        <p class="text-xs text-gray-500">Inspect the extracted spreadsheet records below before starting generation.</p>
+                    </div>
+                    <span id="rowCountBadge" class="hidden text-xs font-bold px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full border border-blue-200">
+                        0 Students
+                    </span>
+                </div>
+
+                <!-- Preview container -->
+                <div id="previewContainer" class="flex-1 flex flex-col justify-center min-h-[160px]">
+                    <div class="text-center p-8 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                        <p class="text-sm text-gray-400 font-medium">No spreadsheet parsed yet.</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Please upload an Excel sheet to display the data grid.</p>
+                    </div>
+                </div>
+
+                <!-- Action button area -->
+                <div class="mt-2 flex flex-col gap-3">
+                    <button 
+                        type="button" 
+                        id="btnGenerate" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/20 text-sm tracking-wide uppercase transition-all duration-200 btn-scale focus:ring-4 focus:ring-blue-500/20 disabled:opacity-40 disabled:pointer-events-none"
+                        disabled
+                        onclick="submitBatch()"
+                    >
+                        Generate & Save Certificates 🚀
+                    </button>
+                    <div id="statusMessage" class="hidden text-center text-xs font-semibold py-2.5 px-4 rounded-xl"></div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right 1-Column: Recent Students Dashboard Widget -->
+        <section class="flex flex-col gap-6">
+            
+            <div class="glass-panel rounded-2xl shadow-xl p-6 md:p-8 flex flex-col h-full min-h-[450px]">
+                
+                <!-- Widget Header -->
+                <div class="flex items-center justify-between border-b border-gray-200/50 pb-4 mb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-gray-800 flex items-center gap-1.5">
+                            Recent Registrations
+                        </h2>
+                        <p class="text-xs text-gray-500">Last 5 synced students</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <span id="widgetBadge" class="text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100">
+                            Class
+                        </span>
+                        <button 
+                            type="button" 
+                            id="btnRefresh" 
+                            class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" 
+                            onclick="loadRecentStudents()" 
+                            title="Refresh Recent Entries"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="refreshIcon">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Students List -->
+                <div id="widgetContainer" class="flex-1 flex flex-col gap-3">
+                    <!-- Loading Placeholder -->
+                    <div class="flex-1 flex items-center justify-center py-12">
+                        <div class="flex flex-col items-center">
+                            <svg class="animate-spin h-6 w-6 text-blue-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-xs text-gray-400">Loading sheets data...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer indicator -->
+                <div class="text-[10px] text-gray-400 text-center mt-4 border-t border-gray-200/40 pt-3">
+                    Connected directly to Google Sheets database
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+</div>
+
+<!-- Scripts -->
+<script>
+// Main state object
+const state = {
+    category: 'Class',
+    students: [],
+    loading: false
+};
+
+// UI Elements
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const previewContainer = document.getElementById('previewContainer');
+const btnGenerate = document.getElementById('btnGenerate');
+const rowCountBadge = document.getElementById('rowCountBadge');
+const statusMessage = document.getElementById('statusMessage');
+const widgetContainer = document.getElementById('widgetContainer');
+const widgetBadge = document.getElementById('widgetBadge');
+const refreshIcon = document.getElementById('refreshIcon');
+
+// Setup Drag & Drop Handlers
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('pulse-active', 'border-blue-500', 'bg-blue-50/20');
+});
+dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('pulse-active', 'border-blue-500', 'bg-blue-50/20');
+});
+dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('pulse-active', 'border-blue-500', 'bg-blue-50/20');
+    if (e.dataTransfer.files.length) {
+        handleFileSelect(e.dataTransfer.files[0]);
+    }
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) {
+        handleFileSelect(e.target.files[0]);
+    }
+});
+
+// Format dates from spreadsheet dynamically (supports serial numbers & ISO strings)
+function formatExcelDate(value) {
+    if (!value) return "";
+    
+    // If format is already DD-MM-YYYY, return as is
+    if (typeof value === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(value)) {
+        return value;
+    }
+    
+    // Check if it's an Excel serial date number
+    if (!isNaN(value)) {
+        const jsDate = new Date((Number(value) - 25569) * 86400 * 1000);
+        if (!isNaN(jsDate.getTime())) {
+            const day = String(jsDate.getDate()).padStart(2, "0");
+            const month = String(jsDate.getMonth() + 1).padStart(2, "0");
+            const year = jsDate.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+    }
+    
+    // Fallback standard parse
+    const dateParsed = new Date(value);
+    if (!isNaN(dateParsed.getTime())) {
+        const day = String(dateParsed.getDate()).padStart(2, "0");
+        const month = String(dateParsed.getMonth() + 1).padStart(2, "0");
+        const year = dateParsed.getFullYear();
+        return `${day}-${month}-${year}`;
+    }
+    
+    return String(value);
+}
+
+// Client-side Excel parser logic
+function handleFileSelect(file) {
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+        showStatus('Only Excel spreadsheet files (.xlsx, .xls) are allowed!', 'error');
+        resetFile();
+        return;
+    }
+
+    // Set file upload details in info badge
+    fileName.textContent = file.name;
+    fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+    fileInfo.classList.remove('hidden');
+    dropzone.classList.add('hidden');
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // Read first worksheet
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // Read raw rows as 2D array to check if a header row is present
+            const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            if (rawRows.length === 0) {
+                showStatus('The selected worksheet is empty.', 'error');
+                resetFile();
+                return;
+            }
+
+            // Find first non-empty row index
+            let firstRowIndex = 0;
+            while (firstRowIndex < rawRows.length && (!rawRows[firstRowIndex] || rawRows[firstRowIndex].length === 0)) {
+                firstRowIndex++;
+            }
+            
+            if (firstRowIndex >= rawRows.length) {
+                showStatus('No data found in the spreadsheet.', 'error');
+                resetFile();
+                return;
+            }
+
+            const firstRow = rawRows[firstRowIndex];
+            
+            // Check if the first row contains standard header keywords
+            const standardHeaders = ['name', 'student name', 'level', 'course', 'date', 'issue date', 'id', 'certificate id', 'email', 'email address'];
+            let hasHeaders = false;
+            for (let cell of firstRow) {
+                if (cell && typeof cell === 'string') {
+                    const cleanCell = cell.trim().toLowerCase();
+                    if (standardHeaders.includes(cleanCell)) {
+                        hasHeaders = true;
+                        break;
+                    }
+                }
+            }
+
+            let parsedStudents = [];
+
+            if (hasHeaders) {
+                // Mode A: Spreadsheet has a header row (standard)
+                const rawJson = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+                parsedStudents = rawJson.map(row => {
+                    const normalized = {};
+                    for (let key in row) {
+                        const cleanKey = key.trim().toLowerCase();
+                        const val = row[key];
+                        
+                        if (cleanKey === 'name' || cleanKey === 'student name' || cleanKey === 'studentname') {
+                            normalized['Name'] = val;
+                        } else if (cleanKey === 'level' || cleanKey === 'course' || cleanKey === 'grade') {
+                            normalized['Level'] = val;
+                        } else if (cleanKey === 'date' || cleanKey === 'issue date' || cleanKey === 'date of issue') {
+                            normalized['Date'] = formatExcelDate(val);
+                        } else if (cleanKey === 'certificate id' || cleanKey === 'certificate_id' || cleanKey === 'cert id' || cleanKey === 'id' || cleanKey === 'certificate no' || cleanKey === 'certificate number') {
+                            normalized['Certificate ID'] = val;
+                        } else if (cleanKey === 'email' || cleanKey === 'email address') {
+                            normalized['Email'] = val;
+                        } else {
+                            normalized[key.trim()] = val;
+                        }
+                    }
+                    return normalized;
+                });
+            } else {
+                // Mode B: Spreadsheet has NO headers (starts directly with student records)
+                // We map by positional indexes: Column 0=Name, 1=Level, 2=Date, 3=CertID, 4=Email
+                const dataRows = rawRows.slice(firstRowIndex);
+                parsedStudents = dataRows.map(row => {
+                    if (!row || row.length === 0) return null;
+                    return {
+                        'Name': row[0] ? String(row[0]).trim() : '',
+                        'Level': row[1] ? String(row[1]).trim() : '',
+                        'Date': row[2] ? formatExcelDate(row[2]) : '',
+                        'Certificate ID': row[3] ? String(row[3]).trim() : '',
+                        'Email': row[4] ? String(row[4]).trim() : ''
+                    };
+                });
+            }
+
+            // Filter out empty rows or records without names
+            state.students = parsedStudents.filter(s => s && s.Name && String(s.Name).trim() !== "");
+
+            if (state.students.length === 0) {
+                showStatus('Could not extract any valid student records. Ensure the name column is not blank.', 'error');
+                resetFile();
+                return;
+            }
+
+            // Populate table grid preview
+            renderPreviewTable(state.students);
+
+            // Enable Generate button
+            btnGenerate.disabled = false;
+            rowCountBadge.textContent = `${state.students.length} Student${state.students.length > 1 ? 's' : ''}`;
+            rowCountBadge.classList.remove('hidden');
+
+            showStatus(`Successfully parsed ${state.students.length} student records from spreadsheet! ${hasHeaders ? '(Headers detected)' : '(Headerless format detected)'}`, 'success');
+        } catch (err) {
+            console.error(err);
+            showStatus('Error parsing Excel file. Please ensure spreadsheet format is valid.', 'error');
+            resetFile();
+        }
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+
+// Render dynamic preview grid
+function renderPreviewTable(data) {
+    if (!data || data.length === 0) {
+        previewContainer.innerHTML = '';
+        return;
+    }
+
+    // Identify standard keys/headers to render
+    const allKeys = Object.keys(data[0]);
+    // Priority headers
+    const priorityHeaders = ["Certificate ID", "Name", "Level", "Date", "Email"];
+    // Rearrange or use available keys
+    const headers = priorityHeaders.filter(h => allKeys.includes(h));
+    // Add leftover keys that weren't prioritized
+    allKeys.forEach(k => {
+        if (!headers.includes(k)) headers.push(k);
+    });
+
+    let html = `
+        <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-inner max-h-[300px]">
+            <table class="min-w-full divide-y divide-gray-200/80 text-xs text-left">
+                <thead class="bg-gray-50/80 sticky top-0 backdrop-blur-sm shadow-sm">
+                    <tr>
+                        ${headers.map(h => `<th class="px-4 py-3 font-semibold text-gray-600 uppercase tracking-wider">${h}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    ${data.map(row => `
+                        <tr class="hover:bg-blue-50/10 transition">
+                            ${headers.map(h => {
+                                const val = row[h] || '';
+                                const isEmail = h === 'Email';
+                                return `<td class="px-4 py-2.5 text-gray-800 whitespace-nowrap font-medium ${isEmail ? 'text-gray-500' : ''}">${val}</td>`;
+                            }).join('')}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    previewContainer.innerHTML = html;
+}
+
+// Reset dropzone state
+function resetFile() {
+    fileInput.value = '';
+    state.students = [];
+    fileInfo.classList.add('hidden');
+    dropzone.classList.remove('hidden');
+    rowCountBadge.classList.add('hidden');
+    btnGenerate.disabled = true;
+    
+    // Clear preview
+    previewContainer.innerHTML = `
+        <div class="text-center p-8 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            <p class="text-sm text-gray-400 font-medium">No spreadsheet parsed yet.</p>
+            <p class="text-xs text-gray-400 mt-0.5">Please upload an Excel sheet to display the data grid.</p>
+        </div>
+    `;
+}
+
+// Helper to update active category
+function setCategory(cat) {
+    if (state.category === cat) return;
+    state.category = cat;
+
+    // Toggle button styles
+    const btnClass = document.getElementById('btnClass');
+    const btnWorkshop = document.getElementById('btnWorkshop');
+
+    if (cat === 'Class') {
+        btnClass.className = "flex-1 py-2 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 shadow-sm transition-all duration-200 focus:outline-none";
+        btnWorkshop.className = "flex-1 py-2 px-4 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-200 focus:outline-none";
+    } else {
+        btnWorkshop.className = "flex-1 py-2 px-4 text-sm font-semibold rounded-lg text-white bg-blue-600 shadow-sm transition-all duration-200 focus:outline-none";
+        btnClass.className = "flex-1 py-2 px-4 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-200 focus:outline-none";
+    }
+
+    widgetBadge.textContent = cat;
+    
+    // Update manual cert ID prefix if manual mode is loaded
+    const manualCertId = document.getElementById('manualCertId');
+    if (manualCertId && manualCertId.value) {
+        autoGenerateCertId();
+    }
+    
+    // Refresh the recent students display
+    loadRecentStudents();
+}
+
+// Display alert messages
+function showStatus(msg, type = 'info') {
+    statusMessage.classList.remove('hidden', 'bg-blue-50', 'text-blue-800', 'bg-red-50', 'text-red-800', 'bg-green-50', 'text-green-800');
+    
+    if (type === 'error') {
+        statusMessage.classList.add('bg-red-50', 'text-red-800', 'border', 'border-red-100');
+    } else if (type === 'success') {
+        statusMessage.classList.add('bg-green-50', 'text-green-800', 'border', 'border-green-100');
+    } else {
+        statusMessage.classList.add('bg-blue-50', 'text-blue-800', 'border', 'border-blue-100');
+    }
+    
+    statusMessage.textContent = msg;
+    statusMessage.classList.remove('hidden');
+}
+
+// Fetch recent students from Express API
+async function loadRecentStudents() {
+    refreshIcon.classList.add('animate-spin');
+    
+    const cat = state.category;
+    try {
+        const response = await fetch(`http://localhost:5000/recent-students/${cat}`);
+        
+        if (!response.ok) {
+            throw new Error(`API returned error code ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderRecentStudents(data);
+    } catch (err) {
+        console.error(err);
+        widgetContainer.innerHTML = `
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p class="text-xs text-red-500 font-semibold">Could not sync registrations</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Please check backend status and script URL config in .env file</p>
+            </div>
+        `;
+    } finally {
+        setTimeout(() => refreshIcon.classList.remove('animate-spin'), 600);
+    }
+}
+
+// Render student list markup
+function renderRecentStudents(students) {
+    if (!students || students.length === 0) {
+        widgetContainer.innerHTML = `
+            <div class="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-gray-150 rounded-xl bg-gray-50/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-300 mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="text-xs font-semibold text-gray-400">No students recorded yet</p>
+                <p class="text-[10px] text-gray-400">Newly processed files will append details here.</p>
+            </div>
+        `;
+        return;
+    }
+
+    widgetContainer.innerHTML = students.map(student => {
+        const name = student.Name || 'Unknown Name';
+        const certId = student["Certificate ID"] || student["Certificate_ID"] || 'N/A';
+        const date = student.Date || 'N/A';
+        const level = student.Level || 'N/A';
+        const email = student.Email || 'No Email';
+        
+        return `
+            <div class="p-3 bg-white/70 border border-gray-200/60 rounded-xl flex flex-col gap-1 shadow-sm hover:shadow-md hover:border-blue-200 transition duration-150">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xs font-bold text-gray-800 truncate max-w-[150px]" title="${name}">${name}</h3>
+                    <span class="text-[9px] font-bold px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-100">${level}</span>
+                </div>
+                <div class="flex justify-between items-center text-[10px] text-gray-400">
+                    <span class="font-mono text-[9px] text-blue-500">${certId}</span>
+                    <span>${date}</span>
+                </div>
+                <div class="text-[9px] text-gray-400 flex items-center gap-1 mt-0.5 truncate">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-300 inline shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span class="truncate" title="${email}">${email}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Monitor background queue status
+async function checkQueueStatus() {
+    try {
+        const response = await fetch("http://localhost:5000/queue-status");
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const banner = document.getElementById('queueStatusBanner');
+        const countBadge = document.getElementById('queueCount');
+        const progressBar = document.getElementById('queueProgressBar');
+        const message = document.getElementById('queueMessage');
+        
+        const classCount = data.status?.Class?.count || 0;
+        const wsCount = data.status?.Workshop?.count || 0;
+        const totalCount = classCount + wsCount;
+        
+        if (totalCount > 0) {
+            banner.classList.remove('hidden');
+            
+            // Retrieve or set initial count in localStorage
+            let storedInitial = localStorage.getItem('initialQueueCount');
+            let initialCount = storedInitial ? parseInt(storedInitial, 10) : 0;
+            
+            // If local storage initial count is outdated or smaller, reset it
+            if (initialCount < totalCount) {
+                initialCount = totalCount;
+                localStorage.setItem('initialQueueCount', initialCount.toString());
+            }
+            
+            countBadge.textContent = `${totalCount} Pending`;
+            
+            // Calculate percentage completed
+            const processed = initialCount - totalCount;
+            const percent = Math.max(5, Math.min(100, Math.round((processed / initialCount) * 100)));
+            progressBar.style.width = `${percent}%`;
+            
+            // Update message
+            let currentMsg = "Certificates are generating in the background. You can safely close this page.";
+            if (data.isProcessing) {
+                currentMsg = `Active: Generating PDFs and sending emails (${processed} of ${initialCount} completed). You can safely close this page.`;
+            } else {
+                currentMsg = "Queue waiting to run. Checks are executing in the background.";
+            }
+            message.textContent = currentMsg;
+            
+            // Refresh registrations display as they complete
+            loadRecentStudents();
+        } else {
+            // Hide banner once queue completes
+            if (!banner.classList.contains('hidden')) {
+                banner.classList.add('hidden');
+                localStorage.removeItem('initialQueueCount');
+                showStatus("All background certificates processed and saved successfully! 🎉", "success");
+                loadRecentStudents();
+            }
+        }
+    } catch (err) {
+        console.error("Queue status check failed:", err.message);
+    }
+}
+
+// Generate certificates batch submission
+async function submitBatch() {
+    if (state.students.length === 0) return;
+
+    btnGenerate.disabled = true;
+    const originalText = btnGenerate.textContent;
+    btnGenerate.textContent = "Queueing Students... ⏳";
+    showStatus("Sending records to background processor...", "info");
+
+    try {
+        const response = await fetch("http://localhost:5000/upload", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                type: state.category,
+                students: state.students
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || `Server returned error ${response.status}`);
+        }
+
+        // Initialize progress tracking count in local storage
+        localStorage.setItem('initialQueueCount', data.count.toString());
+        showStatus(data.message || "Successfully queued batch!", "success");
+
+        // Reset file input & trigger immediate status check
+        resetFile();
+        checkQueueStatus();
+
+    } catch (err) {
+        console.error(err);
+        showStatus(`Error occurred: ${err.message || 'Unknown network error'} ❌`, "error");
+        btnGenerate.disabled = false;
+    } finally {
+        btnGenerate.textContent = originalText;
+    }
+}
+
+// Toggle formatting guide modal
+function toggleHelpModal(show) {
+    const modal = document.getElementById('helpModal');
+    const content = document.getElementById('helpModalContent');
+    if (show) {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    } else {
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
+    }
+}
+
+// Switch between Excel Upload and Manual Entry modes
+function switchInputMode(mode) {
+    const tabExcel = document.getElementById('tabExcel');
+    const tabManual = document.getElementById('tabManual');
+    const excelModeSection = document.getElementById('excelModeSection');
+    const manualModeSection = document.getElementById('manualModeSection');
+    const excelPreviewPanel = document.getElementById('excelPreviewPanel');
+    
+    if (mode === 'excel') {
+        // Tab styling
+        tabExcel.className = "flex-1 pb-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 transition duration-150";
+        tabManual.className = "flex-1 pb-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition duration-150";
+        // Visibility
+        excelModeSection.classList.remove('hidden');
+        excelPreviewPanel.classList.remove('hidden');
+        manualModeSection.classList.add('hidden');
+    } else {
+        // Tab styling
+        tabManual.className = "flex-1 pb-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 transition duration-150";
+        tabExcel.className = "flex-1 pb-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition duration-150";
+        // Visibility
+        excelModeSection.classList.add('hidden');
+        excelPreviewPanel.classList.add('hidden');
+        manualModeSection.classList.remove('hidden');
+        
+        // Auto prepopulate fields for Manual Mode
+        const dateInput = document.getElementById('manualDate');
+        if (!dateInput.value) {
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            dateInput.value = `${dd}-${mm}-${yyyy}`;
+        }
+        
+        const certInput = document.getElementById('manualCertId');
+        if (!certInput.value) {
+            autoGenerateCertId();
+        }
+    }
+}
+
+// Generate random certificate ID based on selected Category and date
+function autoGenerateCertId() {
+    const prefix = state.category === 'Class' ? 'VM-C' : 'VM-W';
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    const dateStr = new Date().getFullYear().toString().substring(2);
+    document.getElementById('manualCertId').value = `${prefix}-${dateStr}-${rand}`;
+}
+
+// Handle Manual Entry submit actions (Download or Email & Save)
+async function submitManualAction(action) {
+    const certId = document.getElementById('manualCertId').value.trim();
+    const name = document.getElementById('manualName').value.trim();
+    const level = document.getElementById('manualLevel').value.trim();
+    const date = document.getElementById('manualDate').value.trim();
+    const email = document.getElementById('manualEmail').value.trim();
+    
+    // Validations
+    if (!name) {
+        showStatus("Student Name is required for certificate generation!", "error");
+        return;
+    }
+    if (action === 'email' && !email) {
+        showStatus("Email Address is required to email the certificate!", "error");
+        return;
+    }
+    
+    const student = {
+        "Name": name,
+        "Level": level,
+        "Date": date,
+        "Certificate ID": certId,
+        "Email": email
+    };
+    
+    const btnDownload = document.getElementById('btnManualDownload');
+    const btnSend = document.getElementById('btnManualSend');
+    
+    // Set UI state
+    btnDownload.disabled = true;
+    btnSend.disabled = true;
+    
+    try {
+        if (action === 'download') {
+            showStatus(`Generating certificate PDF for ${name}... ⏳`, "info");
+            const response = await fetch("http://localhost:5000/generate-pdf-download", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    student,
+                    type: state.category
+                })
+            });
+            
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Failed to download certificate PDF");
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name.replace(/\s+/g, '_')}_Certificate.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            
+            showStatus(`Certificate downloaded successfully for ${name}! 📥`, "success");
+        } else if (action === 'email') {
+            showStatus(`Queueing certificate for ${name} & syncing to Google Sheets... ⏳`, "info");
+            
+            const response = await fetch("http://localhost:5000/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    type: state.category,
+                    students: [student]
+                })
+            });
+            
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to process manual certificate sending");
+            }
+            
+            // Initialize progress tracking
+            localStorage.setItem('initialQueueCount', data.count.toString());
+            showStatus(`Record successfully queued! Certificate will be emailed and saved in background. ✉️`, "success");
+            
+            // Clear inputs for next manual entry
+            document.getElementById('manualName').value = "";
+            document.getElementById('manualEmail').value = "";
+            document.getElementById('manualLevel').value = "";
+            autoGenerateCertId(); // generate a new one
+            
+            // Trigger check to show progress banner
+            checkQueueStatus();
+        }
+    } catch (err) {
+        console.error(err);
+        showStatus(`Error: ${err.message || "Something went wrong"} ❌`, "error");
+    } finally {
+        btnDownload.disabled = false;
+        btnSend.disabled = false;
+    }
+}
+
+// Initial Widget & Status Fetch
+document.addEventListener("DOMContentLoaded", () => {
+    loadRecentStudents();
+    checkQueueStatus();
+    
+    // Start periodic background queue checks
+    setInterval(checkQueueStatus, 4000);
+});
+</script>
+
+<!-- Format Guide Help Modal -->
+<div id="helpModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all duration-300">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-150 p-6 flex flex-col gap-4 transform transition-all duration-300 scale-95 opacity-0" id="helpModalContent">
+        <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                📊 Spreadsheet Formatting Guide
+            </h3>
+            <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold" onclick="toggleHelpModal(false)">&times;</button>
+        </div>
+        
+        <div class="text-xs text-gray-600 flex flex-col gap-3 overflow-y-auto max-h-[400px] pr-1">
+            <p>The portal accepts standard Excel spreadsheets (<code>.xlsx</code> or <code>.xls</code>). You can upload files in two formats:</p>
+            
+            <div>
+                <h4 class="font-bold text-gray-700 mb-1">Option A: Sheet WITH Headers (Standard)</h4>
+                <p class="mb-1.5">Create columns using any of these case-insensitive headers:</p>
+                <ul class="list-disc list-inside space-y-0.5 pl-2 mb-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                    <li><strong>Name</strong>: <code>Name</code>, <code>Student Name</code>, <code>name</code></li>
+                    <li><strong>Level</strong>: <code>Level</code>, <code>Course</code>, <code>grade</code></li>
+                    <li><strong>Date</strong>: <code>Date</code>, <code>Issue Date</code>, <code>date of issue</code></li>
+                    <li><strong>Certificate ID</strong>: <code>Certificate ID</code>, <code>ID</code>, <code>Certificate No</code></li>
+                    <li><strong>Email</strong>: <code>Email</code>, <code>Email Address</code></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-gray-700 mb-1">Option B: Sheet WITHOUT Headers (Positional)</h4>
+                <p class="mb-1.5">If the sheet starts directly with student records on row 1, it maps columns by order:</p>
+                <div class="grid grid-cols-5 gap-2 text-center text-[10px] bg-gray-50 border border-gray-150 p-2.5 rounded-lg font-bold text-gray-600">
+                    <div class="bg-white p-1 rounded border shadow-sm">Col 1<br><span class="text-blue-600">Name</span></div>
+                    <div class="bg-white p-1 rounded border shadow-sm">Col 2<br><span class="text-blue-600">Level</span></div>
+                    <div class="bg-white p-1 rounded border shadow-sm">Col 3<br><span class="text-blue-600">Date</span></div>
+                    <div class="bg-white p-1 rounded border shadow-sm">Col 4<br><span class="text-blue-600">Cert ID</span></div>
+                    <div class="bg-white p-1 rounded border shadow-sm">Col 5<br><span class="text-blue-600">Email</span></div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-gray-700 mb-1">💡 Tips on Formats:</h4>
+                <ul class="list-disc list-inside pl-2 space-y-1">
+                    <li><strong>Dates</strong>: Supports standard date strings (e.g. <code>17-06-2026</code>) and raw Excel serial date numbers (e.g. <code>46190</code>).</li>
+                    <li><strong>Empty Rows</strong>: Empty rows or records without student names are ignored automatically.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="flex justify-end pt-2 border-t border-gray-100">
+            <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition" onclick="toggleHelpModal(false)">Got It!</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

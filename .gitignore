@@ -1,0 +1,9 @@
+# Dependency directories
+node_modules/
+
+# Local credentials
+.env
+
+# Generated certificates
+certificates/*.pdf
+!certificates/.gitkeep

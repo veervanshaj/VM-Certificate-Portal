@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.certificate {
+    width: 1100px;
+    height: 778px;
+    background-image: url("{{bg}}");
+    background-size: cover;
+    background-position: center;
+    font-family: Georgia, serif;
+    position: relative;
+}
+
+/* HEADER */
+.header {
+    text-align: center;
+    position: absolute;
+    top: 60px;
+    width: 100%;
+}
+
+.header h1 {
+    font-size: 48px;
+    letter-spacing: 6px;
+    margin: 0;
+    color: #1b365d;
+}
+
+.header p {
+    font-size: 18px;
+}
+
+/* TITLE */
+.title {
+    position: absolute;
+    top: 180px;
+    width: 100%;
+    text-align: center;
+    font-size: 32px;
+    color: #A0814C;
+    letter-spacing: 4px;
+}
+
+/* CONTENT */
+.content {
+    position: absolute;
+    top: 260px;
+    width: 100%;
+    text-align: center;
+}
+
+.name {
+    font-size: 52px;
+    color: #1b365d;
+}
+
+.name-line {
+    width: 500px;
+    margin: 10px auto;
+    border-bottom: 1.5px solid black;
+}
+
+.desc {
+    margin-top: 15px;
+    font-size: 22px;
+    line-height: 1.6;
+    width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* DATE (LEFT) */
+.date {
+    position: absolute;
+    bottom: 100px;
+    left: 180px;   /* 👈 moved toward center */
+    text-align: center;
+}
+
+.date-line {
+    width: 150px;
+    border-bottom: 1px solid black;
+    margin: 5px auto;
+}
+
+/* CENTER (ID + MSME) */
+.center {
+    position: absolute;
+    bottom: 90px;
+    width: 100%;
+    text-align: center;
+}
+
+.center .id {
+    font-size: 16px;
+    letter-spacing: 1px; /* 🔥 FIXED spacing */
+}
+
+.center .small {
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* SIGNATURE (RIGHT) */
+.signature {
+    position: absolute;
+    bottom: 100px;
+    right: 180px;  /* 👈 moved toward center */
+    text-align: center;
+}
+
+.signature img {
+    height: 60px;
+}
+
+.signature-line {
+    width: 150px;
+    border-bottom: 1px solid black;
+    margin: 5px auto;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="certificate">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>VEDIC MATHSHALA</h1>
+        <p>International Vedic Mathematics Program</p>
+    </div>
+
+    <!-- TITLE -->
+    <div class="title">
+        CERTIFICATE OF ACHIEVEMENT
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+        <p>This is proudly presented to</p>
+
+        <div class="name">{{name}}</div>
+        <div class="name-line"></div>
+
+        <div class="desc">
+            for successfully completing <b>{{level}}</b><br>
+            and demonstrating excellent ability in mental calculation,
+            speed arithmetic and logical reasoning using Vedic Mathematics techniques.
+        </div>
+    </div>
+
+    <!-- DATE -->
+    <div class="date">
+        <div>{{date}}</div>
+        <div class="date-line"></div>
+        <b>Date</b>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center">
+        <div class="id">CERTIFICATE ID: {{id}}</div>
+        <div class="small">MSME Registered Enterprise</div>
+        <div class="small">
+            Udyam Registration No: UDYAM-HR-01-0026436
+        </div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="signature">
+        <img src="{{sign}}">
+        <div class="signature-line"></div>
+        <b>Gauri Vandana</b><br>
+        <i>Director</i>
+    </div>
+
+</div>
+
+</body>
+</html>
