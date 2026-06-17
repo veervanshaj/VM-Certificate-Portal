@@ -72,6 +72,27 @@ function doPost(e) {
         student["Email"] || ""
       ]);
       
+      // Send email if configuration is provided (Bypasses SMTP limitations of hosting environments like Render)
+      if (payload.emailConfig && payload.emailConfig.pdfBase64 && payload.emailConfig.to) {
+        try {
+          const config = payload.emailConfig;
+          const pdfBlob = Utilities.newBlob(
+            Utilities.base64Decode(config.pdfBase64),
+            "application/pdf",
+            config.filename || "certificate.pdf"
+          );
+          
+          MailApp.sendEmail({
+            to: config.to,
+            subject: config.subject || "Your Certificate 🎓",
+            body: config.body || "Please find your certificate attached.",
+            attachments: [pdfBlob]
+          });
+        } catch (mailErr) {
+          Logger.log("Email error: " + mailErr.toString());
+        }
+      }
+      
       // Delete from the queue sheet (first student row is always row 2)
       const qSheetName = "Queue_" + type;
       const qSheet = ss.getSheetByName(qSheetName);
@@ -155,4 +176,36 @@ function doGet(e) {
 function response(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Keep-Alive Ping for Render Free Tier Backend
+ * 
+ * Paste this into Apps Script. You can run 'setupKeepAliveTrigger' once from 
+ * the editor dropdown to set up a trigger that pings your backend every 10 minutes.
+ */
+function keepBackendAlive() {
+  const backendUrl = "https://vedic-mathshala-backend.onrender.com/queue-status";
+  try {
+    const response = UrlFetchApp.fetch(backendUrl);
+    Logger.log("Ping status: " + response.getResponseCode());
+  } catch (err) {
+    Logger.log("Ping error: " + err.toString());
+  }
+}
+
+function setupKeepAliveTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  for (let i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === "keepBackendAlive") {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  
+  ScriptApp.newTrigger("keepBackendAlive")
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+    
+  Logger.log("Keep-alive trigger configured successfully for every 10 minutes!");
 }

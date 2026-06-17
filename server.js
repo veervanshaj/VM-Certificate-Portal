@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import fs from "fs";
 
 import { generatePDF } from "./utils/generatePDF.js";
-import { sendEmail } from "./utils/sendEmail.js";
 
 dotenv.config();
 
@@ -61,25 +60,32 @@ async function processQueues() {
                         // 2. Generate PDF certificate
                         const pdfPath = await generatePDF(student);
                         
-                        // 3. Send congratulations email
-                        await sendEmail(student, pdfPath);
-                        
-                        // 4. Delete temporary PDF to free up disk storage
+                        // 3. Read generated PDF into base64 and delete local file immediately
+                        let pdfBase64 = null;
                         try {
+                            const pdfBuffer = fs.readFileSync(pdfPath);
+                            pdfBase64 = pdfBuffer.toString("base64");
                             fs.unlinkSync(pdfPath);
-                            console.log(`[Queue Processor] Cleaned up temporary PDF: ${pdfPath}`);
-                        } catch (unlinkErr) {
-                            console.error(`[Queue Processor] Failed to delete PDF:`, unlinkErr.message);
+                            console.log(`[Queue Processor] Generated and read PDF to base64, deleted temporary file: ${pdfPath}`);
+                        } catch (pdfErr) {
+                            console.error(`[Queue Processor] Failed to process/delete PDF:`, pdfErr.message);
                         }
                         
-                        // 4. Record as complete in Google Sheets (Moves to final tab, deletes from Queue tab)
+                        // 4. Record as complete in Google Sheets AND send email (Moves to final tab, deletes from Queue tab)
                         const completeResponse = await fetch(googleScriptUrl, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                                 action: "complete",
                                 type: type,
-                                student: student
+                                student: student,
+                                emailConfig: student.Email ? {
+                                    to: student.Email,
+                                    subject: "Your Certificate of Completion - Vedic Mathshala 🎓",
+                                    body: `Dear ${student.Name || "Student"},\n\nCongratulations on completing your course with Vedic Mathshala!\n\nPlease find your certificate of completion attached to this email.\n\nBest regards,\nVedic Mathshala Team`,
+                                    pdfBase64: pdfBase64,
+                                    filename: `${(student.Name || "Certificate").replace(/\s+/g, "_")}.pdf`
+                                } : null
                             })
                         });
                         
