@@ -412,6 +412,9 @@ body {
 
 <!-- Scripts -->
 <script>
+// Production API Base URL
+const API_BASE_URL = "https://vedic-mathshala-backend.onrender.com";
+
 // Main state object
 const state = {
     category: 'Class',
@@ -734,7 +737,7 @@ async function loadRecentStudents() {
     
     const cat = state.category;
     try {
-        const response = await fetch(`http://localhost:5000/recent-students/${cat}`);
+        const response = await fetch(`${API_BASE_URL}/recent-students/${cat}`);
         
         if (!response.ok) {
             throw new Error(`API returned error code ${response.status}`);
@@ -804,7 +807,7 @@ function renderRecentStudents(students) {
 // Monitor background queue status
 async function checkQueueStatus() {
     try {
-        const response = await fetch("http://localhost:5000/queue-status");
+        const response = await fetch(`${API_BASE_URL}/queue-status`);
         if (!response.ok) return;
         
         const data = await response.json();
@@ -872,7 +875,7 @@ async function submitBatch() {
     showStatus("Sending records to background processor...", "info");
 
     try {
-        const response = await fetch("http://localhost:5000/upload", {
+        const response = await fetch(`${API_BASE_URL}/upload`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -1011,7 +1014,7 @@ async function submitManualAction(action) {
     try {
         if (action === 'download') {
             showStatus(`Generating certificate PDF for ${name}... ⏳`, "info");
-            const response = await fetch("http://localhost:5000/generate-pdf-download", {
+            const response = await fetch(`${API_BASE_URL}/generate-pdf-download`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
@@ -1039,7 +1042,7 @@ async function submitManualAction(action) {
         } else if (action === 'email') {
             showStatus(`Queueing certificate for ${name} & syncing to Google Sheets... ⏳`, "info");
             
-            const response = await fetch("http://localhost:5000/upload", {
+            const response = await fetch(`${API_BASE_URL}/upload`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
