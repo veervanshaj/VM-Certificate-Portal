@@ -7,3 +7,6 @@ node_modules/
 # Generated certificates
 certificates/*.pdf
 !certificates/.gitkeep
+
+# Puppeteer cache directory
+.cache/
